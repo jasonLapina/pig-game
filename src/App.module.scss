@@ -34,6 +34,11 @@
   justify-self: center;
 }
 
+.dice {
+  width: 80%;
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+}
+
 .player {
   font-size: 3.2rem;
   grid-row: 2;
@@ -45,6 +50,7 @@
   span {
     text-align: center;
     display: block;
+    font-size: 4.4rem;
   }
 }
 
