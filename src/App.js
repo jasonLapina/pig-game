@@ -107,7 +107,7 @@ function App() {
     const activePlayer = state.activePlayer - 1;
 
     /////// A PLAYER WINS IF PLAYER'S TOTAL SCORE IS >= X (set winning number)
-    if (state.score[activePlayer] + state.total[activePlayer] >= 10) {
+    if (state.score[activePlayer] + state.total[activePlayer] >= 100) {
       setHasWinner(true);
     }
 
