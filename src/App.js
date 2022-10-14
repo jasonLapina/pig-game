@@ -1,15 +1,21 @@
 import classes from './App.module.scss';
 import { useState, useReducer } from 'react';
+import dice0 from './assets/dice-0.png';
 import dice1 from './assets/dice-1.png';
 import dice2 from './assets/dice-2.png';
 import dice3 from './assets/dice-3.png';
 import dice4 from './assets/dice-4.png';
 import dice5 from './assets/dice-5.png';
 import dice6 from './assets/dice-6.png';
+import { act } from 'react-dom/test-utils';
 
 const PlayerCard = (props) => {
   return (
-    <div className={`${classes.player} ${classes[`player--${props.player}`]}`}>
+    <div
+      className={`${classes.player} ${classes[`player--${props.player}`]} ${
+        props.active ? classes.active : ''
+      }`}
+    >
       <div>
         Player {props.player}:<span>{props.score}</span>
       </div>
@@ -20,23 +26,59 @@ const PlayerCard = (props) => {
   );
 };
 
-function App() {
-  const die = [dice1, dice2, dice3, dice4, dice5, dice6];
+// REDUCER FUNCTION FOR CURRENT SCORE AND TOTAL SCORE //
+const scoreReducer = (state, action) => {
+  if (action.type === 1) {
+    return {
+      activePlayer: 1,
+      dice: action.value.dice,
+      score: [state.score[0] + action.value.score, 0],
+      total: [0, 0],
+    };
+  }
+  if (action.type === 2) {
+    return {
+      activePlayer: 2,
+      dice: action.value.dice,
+      score: [state.score[1] + action.value.score, 0],
+      total: [0, 0],
+    };
+  }
+  return { activePlayer: 1, dice: 0, score: [0, 0], total: [0, 0] };
+};
 
-  const [dice, setDice] = useState(0);
+function App() {
+  const die = [dice0, dice1, dice2, dice3, dice4, dice5, dice6];
+  const [state, dispatchScore] = useReducer(scoreReducer, {
+    activePlayer: 1,
+    dice: 0,
+    score: [0, 0],
+    total: [0, 0],
+  });
+
   //  INITIALIZES NEW GAME //
   const resetHandler = () => {};
   // HOLDS CURRENT SCORE AND ADDS TO TOTAL SCORE //
   const holdHandler = () => {};
   // ROLLS DICE //
   const rollHandler = () => {
-    setDice(Math.trunc(Math.random() * 6));
+    const newDice = Math.trunc(Math.random() * 6) + 1;
+    console.log(newDice);
+    dispatchScore({
+      type: state.activePlayer,
+      value: { dice: newDice, score: newDice },
+    });
   };
   return (
     <main className={classes.container}>
       <button className={classes.reset}>new game</button>
-      <img className={classes.dice} src={die[dice]} alt='dice' />
-      <PlayerCard player={1} />
+      <img className={classes.dice} src={die[state.dice]} alt='dice' />
+      <PlayerCard
+        active={state.activePlayer == 1 ? true : false}
+        score={state.score[0]}
+        total={state.total[0]}
+        player={1}
+      />
       <PlayerCard player={2} />
       <div className={classes.buttons}>
         <button onClick={rollHandler} className={classes.roll}>
