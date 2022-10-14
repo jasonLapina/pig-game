@@ -28,6 +28,9 @@ const PlayerCard = (props) => {
 
 // REDUCER FUNCTION FOR CURRENT SCORE AND TOTAL SCORE //
 const scoreReducer = (state, action) => {
+  if (action.type == 'RESET') {
+    return { activePlayer: 1, dice: 0, score: [0, 0], total: [0, 0] };
+  }
   if (action.type == 'HOLD') {
     if (action.active == 1) {
       return {
@@ -44,7 +47,7 @@ const scoreReducer = (state, action) => {
         total: [state.total[0], state.total[1] + action.value],
       };
   }
-
+  // USER ROLLS A 1, WE SWITCH ACTIVE PLAYERS //
   if (action.active === 1) {
     if (action.value.score === 1) {
       return {
@@ -53,7 +56,9 @@ const scoreReducer = (state, action) => {
         score: [0, 0],
         total: [state.total[0], state.total[1]],
       };
-    } else
+    }
+    //// IF NOT DICE NO. IS ADDED TO CURRENT SCORE FOR ACTIVE PLAYER ///
+    else
       return {
         activePlayer: 1,
         dice: action.value.dice,
@@ -82,18 +87,31 @@ const scoreReducer = (state, action) => {
 
 function App() {
   const die = [dice0, dice1, dice2, dice3, dice4, dice5, dice6];
-  const [state, dispatchScore] = useReducer(scoreReducer, {
+  const [state, dispatchState] = useReducer(scoreReducer, {
     activePlayer: 1,
     dice: 0,
     score: [0, 0],
     total: [0, 0],
   });
 
+  // determines if a player has won and therefore render backdrop //
+  const [hasWinner, setHasWinner] = useState(false);
+
   //  INITIALIZES NEW GAME //
-  const resetHandler = () => {};
+  const resetHandler = () => {
+    dispatchState({ type: 'RESET' });
+    setHasWinner(false);
+  };
   // HOLDS CURRENT SCORE AND ADDS TO TOTAL SCORE OF ACTIVE PLAYER //
   const holdHandler = () => {
-    dispatchScore({
+    const activePlayer = state.activePlayer - 1;
+
+    /////// A PLAYER WINS IF PLAYER'S TOTAL SCORE IS >= X (set winning number)
+    if (state.score[activePlayer] + state.total[activePlayer] >= 10) {
+      setHasWinner(true);
+    }
+
+    dispatchState({
       type: 'HOLD',
       active: state.activePlayer,
       value: state.score[state.activePlayer - 1],
@@ -103,15 +121,21 @@ function App() {
   const rollHandler = () => {
     const newDice = Math.trunc(Math.random() * 6) + 1;
     console.log(state.activePlayer);
-    dispatchScore({
+    dispatchState({
       active: state.activePlayer,
       value: { dice: newDice, score: newDice },
     });
   };
+
   return (
     <main className={classes.container}>
-      <button className={classes.reset}>new game</button>
+      {/* BACKDROP RENDERS IF A PLAYER WINS */}
+      {hasWinner && <div className={classes.backdrop} />}
+      <button onClick={resetHandler} className={classes.reset}>
+        new game
+      </button>
       <img className={classes.dice} src={die[state.dice]} alt='dice' />
+
       <PlayerCard
         active={state.activePlayer == 1 ? true : false}
         score={state.score[0]}
