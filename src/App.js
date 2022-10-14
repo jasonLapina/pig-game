@@ -28,21 +28,54 @@ const PlayerCard = (props) => {
 
 // REDUCER FUNCTION FOR CURRENT SCORE AND TOTAL SCORE //
 const scoreReducer = (state, action) => {
-  if (action.type === 1) {
-    return {
-      activePlayer: 1,
-      dice: action.value.dice,
-      score: [state.score[0] + action.value.score, 0],
-      total: [0, 0],
-    };
+  if (action.type == 'HOLD') {
+    if (action.active == 1) {
+      return {
+        activePlayer: 2,
+        dice: 0,
+        score: [0, 0],
+        total: [state.total[0] + action.value, state.total[1]],
+      };
+    } else
+      return {
+        activePlayer: 1,
+        dice: 0,
+        score: [0, 0],
+        total: [state.total[0], state.total[1] + action.value],
+      };
   }
-  if (action.type === 2) {
-    return {
-      activePlayer: 2,
-      dice: action.value.dice,
-      score: [state.score[1] + action.value.score, 0],
-      total: [0, 0],
-    };
+
+  if (action.active === 1) {
+    if (action.value.score === 1) {
+      return {
+        activePlayer: 2,
+        dice: action.value.dice,
+        score: [0, 0],
+        total: [state.total[0], state.total[1]],
+      };
+    } else
+      return {
+        activePlayer: 1,
+        dice: action.value.dice,
+        score: [state.score[0] + action.value.score, 0],
+        total: [state.total[0], state.total[1]],
+      };
+  }
+  if (action.active === 2) {
+    if (action.value.score === 1) {
+      return {
+        activePlayer: 1,
+        dice: action.value.dice,
+        score: [0, 0],
+        total: [state.total[0], state.total[1]],
+      };
+    } else
+      return {
+        activePlayer: 2,
+        dice: action.value.dice,
+        score: [state.score[0], state.score[1] + action.value.score],
+        total: [state.total[0], state.total[1]],
+      };
   }
   return { activePlayer: 1, dice: 0, score: [0, 0], total: [0, 0] };
 };
@@ -58,14 +91,20 @@ function App() {
 
   //  INITIALIZES NEW GAME //
   const resetHandler = () => {};
-  // HOLDS CURRENT SCORE AND ADDS TO TOTAL SCORE //
-  const holdHandler = () => {};
+  // HOLDS CURRENT SCORE AND ADDS TO TOTAL SCORE OF ACTIVE PLAYER //
+  const holdHandler = () => {
+    dispatchScore({
+      type: 'HOLD',
+      active: state.activePlayer,
+      value: state.score[state.activePlayer - 1],
+    });
+  };
   // ROLLS DICE //
   const rollHandler = () => {
     const newDice = Math.trunc(Math.random() * 6) + 1;
-    console.log(newDice);
+    console.log(state.activePlayer);
     dispatchScore({
-      type: state.activePlayer,
+      active: state.activePlayer,
       value: { dice: newDice, score: newDice },
     });
   };
@@ -79,12 +118,19 @@ function App() {
         total={state.total[0]}
         player={1}
       />
-      <PlayerCard player={2} />
+      <PlayerCard
+        active={state.activePlayer == 2 ? true : false}
+        score={state.score[1]}
+        total={state.total[1]}
+        player={2}
+      />
       <div className={classes.buttons}>
         <button onClick={rollHandler} className={classes.roll}>
           🎲 Roll dice
         </button>
-        <button className={classes.hold}>📥 Hold</button>
+        <button onClick={holdHandler} className={classes.hold}>
+          📥 Hold
+        </button>
       </div>
     </main>
   );
